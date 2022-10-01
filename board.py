@@ -9,7 +9,9 @@ class Board:
         self.black_color = Colors.ORANGE
         self.white_color = Colors.BEIGE
         self.board = self.setup_board('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
+        
         self.hanging_piece = None
+        self.hanging_piece_pos = None
 
     def setup_board(self, fen_code: str):
         board = []
@@ -17,7 +19,7 @@ class Board:
             board_row = []
             for j, item in enumerate(row):
                 if item.isdigit():
-                    board_row.extend([None] * (int(item) - 1))
+                    board_row.extend([None] * int(item))
                 else:
                     x, y = self.cell_size * j + self.start_x, self.cell_size * i
                     board_row.append(Piece(x, y, self.cell_size, item))
@@ -31,10 +33,10 @@ class Board:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         cell_x, cell_y = self.get_cell(mouse_x, mouse_y)
 
-        if pygame.mouse.get_pressed()[0]:
-            if not self.inside_board(cell_x, cell_y):
-                return
+        if not self.inside_board(cell_x, cell_y):
+            return
 
+        if pygame.mouse.get_pressed()[0]:
             piece = self.hanging_piece or self.board[cell_y][cell_x]
             if piece is None:
                 return
@@ -42,21 +44,25 @@ class Board:
             mouse_movement = pygame.mouse.get_rel()
             if self.hanging_piece is None:
                 self.hanging_piece = piece
-                self.board[cell_y][cell_x] = None
+                self.hanging_piece_pos = (cell_x, cell_y)
                 return
 
             piece.x += mouse_movement[0]
             piece.y += mouse_movement[1]
-        else:
-            if self.hanging_piece is not None:
-                new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
-                self.hanging_piece.x = new_x
-                self.hanging_piece.y = new_y
-                self.board[cell_y][cell_x] = self.hanging_piece
+        elif self.hanging_piece is not None:
+            old_cell_x, old_cell_y = self.hanging_piece_pos
+            self.board[old_cell_y][old_cell_x] = None
 
-                self.hanging_piece =  None
+            new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
+            self.hanging_piece.x = new_x
+            self.hanging_piece.y = new_y
+            print(self.board)
+            print(cell_y, cell_x)
+            self.board[cell_y][cell_x] = self.hanging_piece
 
-            
+            self.hanging_piece =  None
+            self.hanging_piece_pos = None
+
     def get_cell(self, x: int, y: int):
         cell_x = round((x - self.start_x - x % self.cell_size) / self.cell_size)
         cell_y = round((y - y % self.cell_size) / self.cell_size)
@@ -66,7 +72,7 @@ class Board:
         if x < 0 or y < 0:
             return False
 
-        if x >= len(self.board) or y >= len(self.board[0]):
+        if x >= len(self.board[0]) or y >= len(self.board):
             return False
 
         return True
