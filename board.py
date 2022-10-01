@@ -1,6 +1,8 @@
 import pygame
-from colors import Colors
-from piece import *
+from util.colors import Colors
+from pieces.piece import *
+from pieces.piece_factory import PieceFactory
+from util.utils import is_inside_board
 
 class Board:
     def __init__(self, start_x: int, cell_size: int):
@@ -8,9 +10,9 @@ class Board:
         self.start_x = start_x
         self.black_color = Colors.ORANGE
         self.white_color = Colors.BEIGE
-        self.board = self.setup_board('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
+        self.board = self.setup_board('rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
         
-        self.hanging_piece = None
+        self.hanging_piece: Piece = None
         self.hanging_piece_pos = None
 
     def setup_board(self, fen_code: str):
@@ -33,7 +35,7 @@ class Board:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         cell_x, cell_y = self.get_cell(mouse_x, mouse_y)
 
-        if not self.is_inside_board(cell_x, cell_y):
+        if not is_inside_board(self.board, cell_x, cell_y):
             return
 
         if pygame.mouse.get_pressed()[0]:
@@ -51,7 +53,7 @@ class Board:
             piece.y += mouse_movement[1]
         elif self.hanging_piece is not None:
             old_cell_x, old_cell_y = self.hanging_piece_pos
-            if self.is_valid_movement(cell_x, cell_y):
+            if self.hanging_piece.is_valid_movement(self.board, old_cell_x, old_cell_y, cell_x, cell_y):
                 self.board[old_cell_y][old_cell_x] = None
 
                 new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
@@ -71,20 +73,6 @@ class Board:
         cell_x = round((x - self.start_x - x % self.cell_size) / self.cell_size)
         cell_y = round((y - y % self.cell_size) / self.cell_size)
         return (cell_x, cell_y)
-
-    def is_inside_board(self, x, y):
-        if x < 0 or y < 0:
-            return False
-
-        if x >= len(self.board[0]) or y >= len(self.board):
-            return False
-
-        return True
-
-    def is_valid_movement(self, x, y):
-        old_cell_x, old_cell_y = self.hanging_piece_pos
-        movements = self.hanging_piece.get_available_movements(self.board, old_cell_x, old_cell_y)
-        return self.to_code(x, y) in movements
 
     def draw(self, screen: pygame.Surface):
         self.draw_board(screen)
@@ -109,12 +97,3 @@ class Board:
             for piece in row:
                 if piece is not None:
                     piece.draw(screen)
-
-    def from_code(self, code: str):
-        x = ord(code[0]) - 96
-        y = int(code[1])
-        return (x, y)
-
-    def to_code(self, x: int, y: int):
-        return (chr(x + 97), 8 - y)
-        

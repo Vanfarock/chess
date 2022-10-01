@@ -1,5 +1,5 @@
 import pygame
-from colors import Colors
+from util.colors import Colors
 from board import Board
 
 MAX_FPS = 60
