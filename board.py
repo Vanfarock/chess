@@ -68,7 +68,6 @@ class Board:
             self.hanging_piece =  None
             self.hanging_piece_pos = None
             
-
     def get_cell(self, x: int, y: int):
         cell_x = round((x - self.start_x - x % self.cell_size) / self.cell_size)
         cell_y = round((y - y % self.cell_size) / self.cell_size)
