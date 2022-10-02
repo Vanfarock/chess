@@ -2,18 +2,22 @@ import pygame
 from util.colors import Colors
 from pieces.piece import *
 from pieces.piece_factory import PieceFactory
-from util.utils import is_inside_board
+from util.utils import from_code, is_inside_board
 
 class Board:
     def __init__(self, start_x: int, cell_size: int):
         self.cell_size = cell_size
         self.start_x = start_x
         self.black_color = Colors.ORANGE
+        self.highlighted_black_color = Colors.BLUE
         self.white_color = Colors.BEIGE
-        self.board = self.setup_board('rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
+        self.highlighted_white_color = Colors.GREEN
+        self.board: list[list[Piece]] = self.setup_board('rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
         
         self.hanging_piece: Piece = None
         self.hanging_piece_pos = None
+
+        self.clicked_piece: Piece = None
 
     def setup_board(self, fen_code: str):
         board = []
@@ -41,14 +45,17 @@ class Board:
         if pygame.mouse.get_pressed()[0]:
             piece = self.hanging_piece or self.board[cell_y][cell_x]
             if piece is None:
+                self.clicked_piece = None
                 return
 
             mouse_movement = pygame.mouse.get_rel()
             if self.hanging_piece is None:
                 self.hanging_piece = piece
                 self.hanging_piece_pos = (cell_x, cell_y)
+                self.clicked_piece = piece
                 return
 
+            self.clicked_piece = None
             piece.x += mouse_movement[0]
             piece.y += mouse_movement[1]
         elif self.hanging_piece is not None:
@@ -69,7 +76,8 @@ class Board:
             self.hanging_piece_pos = None
             
     def get_cell(self, x: int, y: int):
-        cell_x = round((x - self.start_x - x % self.cell_size) / self.cell_size)
+        correct_x = x - self.start_x
+        cell_x = round((correct_x - correct_x % self.cell_size) / self.cell_size)
         cell_y = round((y - y % self.cell_size) / self.cell_size)
         return (cell_x, cell_y)
 
@@ -80,10 +88,8 @@ class Board:
     def draw_board(self, screen: pygame.Surface):
         for i in range(8):
             for j in range(8):
-                if (i + j) % 2 == 0:
-                    color = self.white_color
-                else:
-                    color = self.black_color
+                if (i + j) % 2 == 0: color = self.white_color
+                else: color = self.black_color
                 
                 x, y = self.cell_size * j + self.start_x, self.cell_size * i
                 pygame.draw.rect(
@@ -92,7 +98,28 @@ class Board:
                     (x, y, self.cell_size, self.cell_size))
 
     def draw_pieces(self, screen: pygame.Surface):
+        self.draw_piece_valid_movements(screen)
+
         for row in self.board:
             for piece in row:
                 if piece is not None:
                     piece.draw(screen)
+
+    def draw_piece_valid_movements(self, screen: pygame.Surface):
+        if self.clicked_piece is None:
+            return
+
+        cell_x, cell_y = self.get_cell(self.clicked_piece.x, self.clicked_piece.y)
+        movements = self.clicked_piece.get_valid_movements(self.board, cell_x, cell_y)
+        for movement in movements:
+            movement_cell_x, movement_cell_y = from_code(movement)
+            
+            if (movement_cell_x + movement_cell_y) % 2 == 0: color = self.highlighted_white_color
+            else: color = self.highlighted_black_color
+
+            x = movement_cell_x * self.cell_size + self.start_x
+            y = movement_cell_y * self.cell_size
+            pygame.draw.rect(
+                screen,
+                color, 
+                (x, y, self.cell_size, self.cell_size))

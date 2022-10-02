@@ -12,7 +12,7 @@ class Pawn(Piece):
             return PieceCode.PAWN
         return f'{PieceCode.PAWN.lower()}'
 
-    def get_available_movements(self, board, cell_x, cell_y):
+    def get_valid_movements(self, board, cell_x, cell_y):
         movements = []
         
         if self.white: forward_y = cell_y - 1

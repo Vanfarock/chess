@@ -36,7 +36,7 @@ class Piece(pygame.sprite.Sprite, ABC):
         screen.blit(self.image, (self.x, self.y))
 
     def is_valid_movement(self, board, cell_x, cell_y, new_cell_x, new_cell_y):
-        movements = self.get_available_movements(board, cell_x, cell_y)
+        movements = self.get_valid_movements(board, cell_x, cell_y)
         return to_code(new_cell_x, new_cell_y) in movements
 
     @abstractmethod
@@ -44,5 +44,5 @@ class Piece(pygame.sprite.Sprite, ABC):
         pass
 
     @abstractmethod
-    def get_available_movements(self, board, cell_x, cell_y):
+    def get_valid_movements(self, board, cell_x, cell_y):
         pass

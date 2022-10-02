@@ -12,7 +12,7 @@ class Queen(Piece):
             return PieceCode.QUEEN
         return f'{PieceCode.QUEEN.lower()}'
 
-    def get_available_movements(self, board, cell_x, cell_y):
+    def get_valid_movements(self, board, cell_x, cell_y):
         movements = []
         
         x = cell_x + 1
