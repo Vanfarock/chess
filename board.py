@@ -42,39 +42,59 @@ class Board:
         if not is_inside_board(self.board, cell_x, cell_y):
             return
 
-        if pygame.mouse.get_pressed()[0]:
-            piece = self.hanging_piece or self.board[cell_y][cell_x]
-            if piece is None:
-                self.clicked_piece = None
-                return
-
-            mouse_movement = pygame.mouse.get_rel()
-            if self.hanging_piece is None:
-                self.hanging_piece = piece
-                self.hanging_piece_pos = (cell_x, cell_y)
-                self.clicked_piece = piece
-                return
-
-            self.clicked_piece = None
-            piece.x += mouse_movement[0]
-            piece.y += mouse_movement[1]
+        if self.clicked_left_mouse_button():
+            self.handle_mouse_click(cell_x, cell_y)
         elif self.hanging_piece is not None:
-            old_cell_x, old_cell_y = self.hanging_piece_pos
-            if self.hanging_piece.is_valid_movement(self.board, old_cell_x, old_cell_y, cell_x, cell_y):
-                self.board[old_cell_y][old_cell_x] = None
+            self.handle_mouse_release(cell_x, cell_y)
+    
+    def clicked_left_mouse_button(self):
+        return pygame.mouse.get_pressed()[0]
 
-                new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
-                self.hanging_piece.x = new_x
-                self.hanging_piece.y = new_y
-                self.board[cell_y][cell_x] = self.hanging_piece
-            else:
-                old_x, old_y = self.cell_size * old_cell_x + self.start_x, self.cell_size * old_cell_y
-                self.hanging_piece.x = old_x
-                self.hanging_piece.y = old_y
+    def handle_mouse_click(self, cell_x: int, cell_y: int):
+        if self.clicked_piece is not None:
+            clicked_cell_x, clicked_cell_y = self.get_cell(self.clicked_piece.x, self.clicked_piece.y)
+            if self.clicked_piece.is_valid_movement(self.board, clicked_cell_x, clicked_cell_y, cell_x, cell_y):
+                self.move_piece(self.clicked_piece, clicked_cell_x, clicked_cell_y, cell_x, cell_y)
+            self.clicked_piece = None
+            return
 
-            self.hanging_piece =  None
-            self.hanging_piece_pos = None
-            
+        piece = self.hanging_piece or self.board[cell_y][cell_x]
+        if piece is None:
+            self.clicked_piece = None
+            return
+
+        self.clicked_piece = piece
+
+        mouse_movement = pygame.mouse.get_rel()
+        if self.hanging_piece is None:
+            self.hanging_piece = piece
+            self.hanging_piece_pos = (cell_x, cell_y)
+            return
+
+        self.clicked_piece = None
+        piece.x += mouse_movement[0]
+        piece.y += mouse_movement[1]
+
+    def handle_mouse_release(self, cell_x: int, cell_y: int):
+        old_cell_x, old_cell_y = self.hanging_piece_pos
+        if self.hanging_piece.is_valid_movement(self.board, old_cell_x, old_cell_y, cell_x, cell_y):
+            self.move_piece(self.hanging_piece, old_cell_x, old_cell_y, cell_x, cell_y)
+        else:
+            old_x, old_y = self.cell_size * old_cell_x + self.start_x, self.cell_size * old_cell_y
+            self.hanging_piece.x = old_x
+            self.hanging_piece.y = old_y
+
+        self.hanging_piece =  None
+        self.hanging_piece_pos = None
+
+    def move_piece(self, piece: Piece, old_cell_x: int, old_cell_y: int, cell_x: int, cell_y: int):
+        self.board[old_cell_y][old_cell_x] = None
+
+        new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
+        piece.x = new_x
+        piece.y = new_y
+        self.board[cell_y][cell_x] = piece
+
     def get_cell(self, x: int, y: int):
         correct_x = x - self.start_x
         cell_x = round((correct_x - correct_x % self.cell_size) / self.cell_size)
