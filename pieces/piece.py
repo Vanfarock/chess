@@ -15,6 +15,7 @@ class Piece(pygame.sprite.Sprite, ABC):
         image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(image, (cell_size, cell_size))
         self.rect = self.image.get_rect(topleft=(x, y))
+        self._was_moved = False
 
     def get_source_images(self):
         return {
@@ -38,6 +39,9 @@ class Piece(pygame.sprite.Sprite, ABC):
     def is_valid_movement(self, board, cell_x, cell_y, new_cell_x, new_cell_y):
         movements = self.get_valid_movements(board, cell_x, cell_y)
         return to_code(new_cell_x, new_cell_y) in movements
+
+    def moved(self):
+      self._was_moved = True
 
     @abstractmethod
     def get_fen_code(self):

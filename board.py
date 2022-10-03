@@ -58,7 +58,6 @@ class Board:
             if self.clicked_piece.is_valid_movement(self.board, clicked_cell_x, clicked_cell_y, cell_x, cell_y):
                 self.move_piece(self.clicked_piece, clicked_cell_x, clicked_cell_y, cell_x, cell_y)
             self.clicked_piece = None
-            return
 
         piece = self.hanging_piece or self.board[cell_y][cell_x]
         if piece is None:
@@ -103,6 +102,8 @@ class Board:
         piece.y = new_y
         self.board[cell_y][cell_x] = piece
         self.is_white_turn = not self.is_white_turn
+
+        piece.moved()
 
     def get_cell(self, x: int, y: int):
         correct_x = x - self.start_x
