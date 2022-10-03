@@ -15,56 +15,26 @@ class Bishop(Piece):
     def get_valid_movements(self, board, cell_x, cell_y):
         movements = []
         
-        x = cell_x + 1
-        y = cell_y + 1
-        while is_inside_board(board, x, y):
-            cell = board[y][x]
-            if cell is not None:
-                if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y, will_eat=True))
-                break
-            
-            movements.append(to_code(x, y))
-            x += 1
-            y += 1
+        directions = [
+            (1 , 1),
+            (1 ,-1),
+            (-1, 1),
+            (-1,-1),
+        ]
 
-        x = cell_x - 1
-        y = cell_y + 1
-        while is_inside_board(board, x, y):
-            cell = board[y][x]
-            if cell is not None:
-                if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y, will_eat=True))
-                break
-            
-            movements.append(to_code(x, y))
-            x -= 1
-            y += 1
+        for direction in directions:
+            x = cell_x + direction[0]
+            y = cell_y + direction[1]
 
-        x = cell_x + 1
-        y = cell_y - 1
-        while is_inside_board(board, x, y):
-            cell = board[y][x]
-            if cell is not None:
-                if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y, will_eat=True))
-                break
-            
-            movements.append(to_code(x, y))
-            x += 1
-            y -= 1
-
-        x = cell_x - 1
-        y = cell_y - 1
-        while is_inside_board(board, x, y):
-            cell = board[y][x]
-            if cell is not None:
-                if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y, will_eat=True))
-                break
-            
-            movements.append(to_code(x, y))
-            x -= 1
-            y -= 1
+            while is_inside_board(board, x, y):
+                cell = board[y][x]
+                if cell is not None:
+                    if cell.is_white != self.is_white:
+                        movements.append(to_code(x, y, will_eat=True))
+                    break
+                
+                movements.append(to_code(x, y))
+                x += direction[0]
+                y += direction[1]
 
         return movements

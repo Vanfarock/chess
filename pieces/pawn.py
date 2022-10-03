@@ -14,7 +14,7 @@ class Pawn(Piece):
 
     def get_valid_movements(self, board, cell_x, cell_y):
         movements = []
-        
+  
         if self.is_white: forward_y = cell_y - 1
         else: forward_y = cell_y + 1
 
