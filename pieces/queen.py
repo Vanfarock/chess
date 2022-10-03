@@ -20,7 +20,7 @@ class Queen(Piece):
             cell = board[cell_y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, cell_y))
+                    movements.append(to_code(x, cell_y, will_eat=True))
                 break
             
             movements.append(to_code(x, cell_y))
@@ -31,7 +31,7 @@ class Queen(Piece):
             cell = board[cell_y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, cell_y))
+                    movements.append(to_code(x, cell_y, will_eat=True))
                 break
             
             movements.append(to_code(x, cell_y))
@@ -42,7 +42,7 @@ class Queen(Piece):
             cell = board[y][cell_x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(cell_x, y))
+                    movements.append(to_code(cell_x, y, will_eat=True))
                 break
             
             movements.append(to_code(cell_x, y))
@@ -53,7 +53,7 @@ class Queen(Piece):
             cell = board[y][cell_x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(cell_x, y))
+                    movements.append(to_code(cell_x, y, will_eat=True))
                 break
             
             movements.append(to_code(cell_x, y))
@@ -65,7 +65,7 @@ class Queen(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))
@@ -78,7 +78,7 @@ class Queen(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))
@@ -91,7 +91,7 @@ class Queen(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))
@@ -104,7 +104,7 @@ class Queen(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))

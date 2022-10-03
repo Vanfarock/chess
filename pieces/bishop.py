@@ -21,7 +21,7 @@ class Bishop(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))
@@ -34,7 +34,7 @@ class Bishop(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))
@@ -47,7 +47,7 @@ class Bishop(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))
@@ -60,7 +60,7 @@ class Bishop(Piece):
             cell = board[y][x]
             if cell is not None:
                 if cell.is_white != self.is_white:
-                    movements.append(to_code(x, y))
+                    movements.append(to_code(x, y, will_eat=True))
                 break
             
             movements.append(to_code(x, y))

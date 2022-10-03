@@ -11,7 +11,8 @@ class Board:
         self.black_color = Colors.ORANGE
         self.highlighted_black_color = Colors.BLUE
         self.is_white_color = Colors.BEIGE
-        self.highlighted_white_color = Colors.GREEN
+        self.highlighted_white_color = Colors.BLUE
+        self.eat_color = Colors.RED
         self.board: list[list[Piece]] = self.setup_board('rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
         
         self.hanging_piece: Piece = None
@@ -20,6 +21,7 @@ class Board:
         self.clicked_piece: Piece = None
 
         self.is_white_turn = True
+        self.eaten_pieces = []
 
     def setup_board(self, fen_code: str):
         board = []
@@ -142,10 +144,13 @@ class Board:
         cell_x, cell_y = self.get_cell(self.clicked_piece.x, self.clicked_piece.y)
         movements = self.clicked_piece.get_valid_movements(self.board, cell_x, cell_y)
         for movement in movements:
-            movement_cell_x, movement_cell_y = from_code(movement)
+            (movement_cell_x, movement_cell_y), will_eat, will_check = from_code(movement)
             
             if (movement_cell_x + movement_cell_y) % 2 == 0: color = self.highlighted_white_color
             else: color = self.highlighted_black_color
+
+            if will_eat:
+                color = self.eat_color
 
             x = movement_cell_x * self.cell_size + self.start_x
             y = movement_cell_y * self.cell_size

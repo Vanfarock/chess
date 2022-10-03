@@ -19,56 +19,72 @@ class Knight(Piece):
         y = cell_y + 2
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         x = cell_x + 1
         y = cell_y - 2
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         x = cell_x - 1
         y = cell_y + 2
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         x = cell_x - 1
         y = cell_y - 2
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         x = cell_x + 2
         y = cell_y + 1
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         x = cell_x + 2
         y = cell_y - 1
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         x = cell_x - 2
         y = cell_y + 1
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         x = cell_x - 2
         y = cell_y - 1
         if is_inside_board(board, x, y):
             cell = board[y][x]
-            if cell is None or cell.is_white != self.is_white:
+            if cell is None:
                 movements.append(to_code(x, y))
+            elif cell.is_white != self.is_white:
+                movements.append(to_code(x, y, will_eat=True))
 
         return movements
