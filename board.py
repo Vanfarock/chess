@@ -13,6 +13,7 @@ class Board:
         self.is_white_color = Colors.BEIGE
         self.highlighted_white_color = Colors.BLUE
         self.eat_color = Colors.RED
+        self.summary_color = Colors.WHITE
         self.board: list[list[Piece]] = self.setup_board('rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
         
         self.hanging_piece: Piece = None
@@ -21,7 +22,7 @@ class Board:
         self.clicked_piece: Piece = None
 
         self.is_white_turn = True
-        self.eaten_pieces = []
+        self.eaten_pieces: list[Piece] = []
 
     def setup_board(self, fen_code: str):
         board = []
@@ -99,6 +100,10 @@ class Board:
 
         self.board[old_cell_y][old_cell_x] = None
 
+        eaten_piece = self.board[cell_y][cell_x]
+        if eaten_piece is not None:
+            self.eaten_pieces.append(eaten_piece)
+
         new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
         piece.x = new_x
         piece.y = new_y
@@ -116,6 +121,8 @@ class Board:
     def draw(self, screen: pygame.Surface):
         self.draw_board(screen)
         self.draw_pieces(screen)
+        self.draw_summary(screen)
+        self.draw_eaten_pieces(screen)
         
     def draw_board(self, screen: pygame.Surface):
         for i in range(8):
@@ -158,3 +165,41 @@ class Board:
                 screen,
                 color, 
                 (x, y, self.cell_size, self.cell_size))
+
+    def draw_summary(self, screen: pygame.Surface):
+        width, height = screen.get_width(), screen.get_height()
+
+        pygame.draw.rect(
+            screen,
+            self.summary_color,
+            (0, 0, self.start_x, height))
+
+        pygame.draw.rect(
+            screen,
+            self.summary_color,
+            (width - self.start_x, 0, self.start_x, height))
+
+        self.draw_eaten_pieces(screen)
+
+    def draw_eaten_pieces(self, screen: pygame.Surface):
+        width, height = screen.get_width(), screen.get_height()
+
+        white_x, white_y = 0, 0
+        black_x, black_y = width - self.cell_size, height - self.cell_size
+        for piece in self.eaten_pieces:
+            if piece.is_white:
+                piece.x = white_x
+                piece.y = white_y
+                white_y += self.cell_size
+                if white_y > height:
+                    white_y = 0
+                    white_x += self.cell_size
+                piece.draw(screen)
+            else:
+                piece.x = black_x
+                piece.y = black_y
+                black_y -= self.cell_size
+                if black_y < 0:
+                    black_y = height - self.cell_size
+                    black_x -= self.cell_size
+                piece.draw(screen)
