@@ -5,11 +5,11 @@ from pieces.piece_code import PieceCode
 from util.utils import to_code
 
 class Piece(pygame.sprite.Sprite, ABC):
-    def __init__(self, x: int, y: int, cell_size: int, white: bool):
+    def __init__(self, x: int, y: int, cell_size: int, is_white: bool):
         super().__init__()
 
         self.x, self.y = x, y
-        self.white = white
+        self.is_white = is_white
         
         image_path = self.get_source_images()[self.get_fen_code()]
         image = pygame.image.load(image_path).convert_alpha()

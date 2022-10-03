@@ -10,7 +10,7 @@ class Board:
         self.start_x = start_x
         self.black_color = Colors.ORANGE
         self.highlighted_black_color = Colors.BLUE
-        self.white_color = Colors.BEIGE
+        self.is_white_color = Colors.BEIGE
         self.highlighted_white_color = Colors.GREEN
         self.board: list[list[Piece]] = self.setup_board('rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
         
@@ -18,6 +18,8 @@ class Board:
         self.hanging_piece_pos = None
 
         self.clicked_piece: Piece = None
+
+        self.is_white_turn = True
 
     def setup_board(self, fen_code: str):
         board = []
@@ -63,6 +65,9 @@ class Board:
             self.clicked_piece = None
             return
 
+        if piece.is_white != self.is_white_turn:
+            return
+
         self.clicked_piece = piece
 
         mouse_movement = pygame.mouse.get_rel()
@@ -88,12 +93,16 @@ class Board:
         self.hanging_piece_pos = None
 
     def move_piece(self, piece: Piece, old_cell_x: int, old_cell_y: int, cell_x: int, cell_y: int):
+        if piece.is_white != self.is_white_turn:
+            return
+
         self.board[old_cell_y][old_cell_x] = None
 
         new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
         piece.x = new_x
         piece.y = new_y
         self.board[cell_y][cell_x] = piece
+        self.is_white_turn = not self.is_white_turn
 
     def get_cell(self, x: int, y: int):
         correct_x = x - self.start_x
@@ -108,7 +117,7 @@ class Board:
     def draw_board(self, screen: pygame.Surface):
         for i in range(8):
             for j in range(8):
-                if (i + j) % 2 == 0: color = self.white_color
+                if (i + j) % 2 == 0: color = self.is_white_color
                 else: color = self.black_color
                 
                 x, y = self.cell_size * j + self.start_x, self.cell_size * i
