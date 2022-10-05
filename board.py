@@ -22,6 +22,7 @@ class Board:
         self.clicked_piece: Piece = None
 
         self.is_white_turn = True
+        self.is_checked = None
         self.eaten_pieces: list[Piece] = []
 
     def setup_board(self, fen_code: str):
@@ -99,18 +100,56 @@ class Board:
             return
 
         self.board[old_cell_y][old_cell_x] = None
-
         eaten_piece = self.board[cell_y][cell_x]
-        if eaten_piece is not None:
-            self.eaten_pieces.append(eaten_piece)
-
-        new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
-        piece.x = new_x
-        piece.y = new_y
         self.board[cell_y][cell_x] = piece
-        self.is_white_turn = not self.is_white_turn
+        
+        new_x, new_y = self.cell_size * cell_x + self.start_x, self.cell_size * cell_y                
+        piece.x, piece.y = new_x, new_y
+        
+        self.is_checked = self.player_is_checked(self.is_white_turn)
+        if self.is_checked:
+            if eaten_piece is not None:
+                self.eaten_pieces.append(eaten_piece)
 
-        piece.moved()
+            self.board[old_cell_y][old_cell_x] = piece
+            self.board[cell_y][cell_x] = eaten_piece
+            old_x, old_y = self.cell_size * old_cell_x + self.start_x, self.cell_size * old_cell_y
+            piece.x, piece.y = old_x, old_y
+        else:
+            self.is_white_turn = not self.is_white_turn
+            if eaten_piece is not None:
+                self.eaten_pieces.append(eaten_piece)
+
+            piece.moved()
+            self.game_is_over()
+
+    def player_is_checked(self, is_white: bool):
+        king_cell = self.get_king_cell(is_white)
+        if king_cell is None:
+            return False
+
+        for row in self.board:
+            for piece in row:
+                if piece is not None and piece.is_white != is_white:
+                    cell_x, cell_y = self.get_cell(piece.x, piece.y)
+                    movements = piece.get_valid_movements(self.board, cell_x, cell_y)
+                    movements = list(map(remove_code_modifiers, movements))
+                    if to_code(king_cell[0], king_cell[1]) in movements:
+                        return True
+        return False
+
+    def game_is_over(self):
+        pass
+
+    def get_king_cell(self, is_white: bool):
+        for row in self.board:
+            for piece in row:
+                if piece is not None and piece.is_white == is_white and self.is_king(piece):
+                    return self.get_cell(piece.x, piece.y)
+        return None
+
+    def is_king(self, piece: Piece):
+        return piece.get_fen_code().lower() == PieceCode.KING.lower()
 
     def get_cell(self, x: int, y: int):
         correct_x = x - self.start_x
@@ -191,7 +230,7 @@ class Board:
                 piece.x = white_x
                 piece.y = white_y
                 white_y += self.cell_size
-                if white_y > height:
+                if white_y + self.cell_size > height:
                     white_y = 0
                     white_x += self.cell_size
                 piece.draw(screen)
