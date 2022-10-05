@@ -1,6 +1,6 @@
 import pygame
-from util.colors import Colors
 from board import Board
+from util.colors import Colors
 
 MAX_FPS = 60
 
@@ -14,8 +14,6 @@ class Game:
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
         
-        self.board = Board((self.width - self.height) / 2, self.height / 8)
-
         self.reset()
 
     def run(self):
@@ -29,6 +27,8 @@ class Game:
             self.check_events()
 
             self.draw()
+
+            self.check_game_result()
 
             pygame.display.flip()
 
@@ -44,5 +44,13 @@ class Game:
     def draw(self):
         self.board.draw(self.screen)
 
+    def check_game_result(self):
+        if self.board.checkmate:
+            print('Checkmate')
+            self.reset()
+        elif self.board.stalemate:
+            print('Stalemate')
+            self.reset()
+
     def reset(self):
-        pass
+        self.board = Board((self.width - self.height) / 2, self.height / 8)

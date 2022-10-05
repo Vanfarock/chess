@@ -1,3 +1,6 @@
+from pieces.piece_code import PieceCode
+
+
 def is_inside_board(board, cell_x, cell_y):
     return not (cell_x < 0 or cell_y < 0 or cell_x >= len(board[0]) or cell_y >= len(board))
 
@@ -32,3 +35,7 @@ def remove_code_modifiers(code: str):
         code = code[1:]
 
     return code
+
+def is_king(piece):
+    return piece.get_fen_code().lower() == PieceCode.KING.lower()
+ 
