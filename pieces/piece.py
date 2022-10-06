@@ -36,11 +36,14 @@ class Piece(pygame.sprite.Sprite, ABC):
     def draw(self, screen: pygame.Surface):
         screen.blit(self.image, (self.x, self.y))
 
-    def is_valid_movement(self, board, cell_x, cell_y, new_cell_x, new_cell_y):
-        movements = self.get_valid_movements(board, cell_x, cell_y)
+    def is_valid_movement(self, board: list[list['Piece']], cell: tuple[int, int], new_cell_x: int, new_cell_y: int):
+        movements = self.get_valid_movements(board, cell)
         movements_without_modifiers = map(remove_code_modifiers, movements)
-        
         return to_code(new_cell_x, new_cell_y) in movements_without_modifiers
+
+    def move(self, new_pos: tuple[int, int]):
+        self.x = new_pos[0]
+        self.y = new_pos[1]
 
     def moved(self):
         self._was_moved = True
@@ -50,5 +53,5 @@ class Piece(pygame.sprite.Sprite, ABC):
         pass
 
     @abstractmethod
-    def get_valid_movements(self, board, cell_x, cell_y):
+    def get_valid_movements(self, board: list[list['Piece']], cell: tuple[int, int]):
         pass

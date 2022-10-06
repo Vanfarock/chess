@@ -12,7 +12,7 @@ class Knight(Piece):
             return PieceCode.KNIGHT
         return f'{PieceCode.KNIGHT.lower()}'
 
-    def get_valid_movements(self, board, cell_x, cell_y):
+    def get_valid_movements(self, board: list[list['Piece']], cell: tuple[int, int]):
         movements = []
 
         directions = [
@@ -27,14 +27,14 @@ class Knight(Piece):
         ]
 
         for direction in directions:
-            x = cell_x + direction[0]
-            y = cell_y + direction[1]
+            x = cell[0] + direction[0]
+            y = cell[1] + direction[1]
 
             if is_inside_board(board, x, y):
-                cell = board[y][x]
-                if cell is None:
+                piece = board[y][x]
+                if piece is None:
                     movements.append(to_code(x, y))
-                elif cell.is_white != self.is_white:
+                elif piece.is_white != self.is_white:
                     movements.append(to_code(x, y, will_eat=True))
 
         return movements
