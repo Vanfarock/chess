@@ -3,15 +3,15 @@ from pieces.piece_code import PieceCode
 from util.utils import is_inside_board, to_code
 
 class King(Piece):
-    def __init__(self, x: int, y: int, cell_size: int, is_white: bool):
-        super().__init__(x, y, cell_size, is_white)
+    def __init__(self, cell_size: int, is_white: bool):
+        super().__init__(cell_size, is_white)
 
     def get_fen_code(self):
         if self.is_white:
             return PieceCode.KING
         return f'{PieceCode.KING.lower()}'
 
-    def get_valid_movements(self, board: list[list['Piece']], cell: tuple[int, int]):
+    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]'):
         movements = []
 
         directions = [

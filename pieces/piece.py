@@ -5,16 +5,14 @@ from pieces.piece_code import PieceCode
 from util.utils import remove_code_modifiers, to_code
 
 class Piece(pygame.sprite.Sprite, ABC):
-    def __init__(self, x: int, y: int, cell_size: int, is_white: bool):
+    def __init__(self, cell_size: int, is_white: bool):
         super().__init__()
 
-        self.x, self.y = x, y
         self.is_white = is_white
         
         image_path = self.get_source_images()[self.get_fen_code()]
         image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(image, (cell_size, cell_size))
-        self.rect = self.image.get_rect(topleft=(x, y))
         self._was_moved = False
 
     def get_source_images(self):
@@ -33,15 +31,15 @@ class Piece(pygame.sprite.Sprite, ABC):
             f'{PieceCode.KING.lower()}': 'assets/king_black.png',
         }
 
-    def draw(self, screen: pygame.Surface):
-        screen.blit(self.image, (self.x, self.y))
+    def draw(self, screen: pygame.Surface, pos: 'tuple[int, int]'):
+        screen.blit(self.image, pos)
 
-    def is_valid_movement(self, board: list[list['Piece']], cell: tuple[int, int], new_cell_x: int, new_cell_y: int):
+    def is_valid_movement(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]', new_cell_x: int, new_cell_y: int):
         movements = self.get_valid_movements(board, cell)
         movements_without_modifiers = map(remove_code_modifiers, movements)
         return to_code(new_cell_x, new_cell_y) in movements_without_modifiers
 
-    def move(self, new_pos: tuple[int, int]):
+    def move(self, new_pos: 'tuple[int, int]'):
         self.x = new_pos[0]
         self.y = new_pos[1]
 
@@ -53,5 +51,5 @@ class Piece(pygame.sprite.Sprite, ABC):
         pass
 
     @abstractmethod
-    def get_valid_movements(self, board: list[list['Piece']], cell: tuple[int, int]):
+    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]'):
         pass

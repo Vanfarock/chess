@@ -2,6 +2,9 @@ import pygame
 from board import Board
 from pieces.piece import Piece
 from util.colors import Colors
+import random as rd
+
+from util.utils import from_code
 
 MAX_FPS = 60
 
@@ -36,6 +39,8 @@ class Game:
 
             self.draw()
 
+            self.play_ai()
+
             pygame.display.flip()
 
         pygame.quit()
@@ -69,30 +74,42 @@ class Game:
         if self.clicked_piece is None:
             return
 
-        clicked_cell = self.board.get_cell(self.clicked_piece.x, self.clicked_piece.y)
+        clicked_cell = self.board.get_piece_cell(self.clicked_piece)
         if self.clicked_piece.is_valid_movement(self.board.get(), clicked_cell, x, y):
-            self.move_piece(self.clicked_piece, clicked_cell[0], clicked_cell[1], x, y)
+            self.move_piece(self.clicked_piece, clicked_cell, (x, y))
             self.clicked_piece = None
 
-    def move_piece(self, piece: Piece, from_x: int, from_y: int, to_x: int, to_y: int):
-        success = self.board.try_move_piece(piece, self.is_white_turn, from_x, from_y, to_x, to_y)
+    def move_piece(self, piece: Piece, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):
+        success = self.board.try_move_piece(piece, self.is_white_turn, from_pos, to_pos)
         if success:
             piece.moved()
             self.is_white_turn = not self.is_white_turn
             self.check_game_result()
+        return success
 
     def draw(self):
         self.board.draw(self.screen, self.clicked_piece)
 
+    def play_ai(self):
+        if not self.is_white_turn:
+            while True:
+                pieces = self.board.get_pieces(self.is_white_turn)
+                chosen_piece, piece_cell = rd.choice(pieces)
+
+                movements = chosen_piece.get_valid_movements(self.board.get(), piece_cell)
+                if len(movements) > 0:
+                    chosen_move = rd.choice(movements)
+                    movement_cell, _, _ = from_code(chosen_move)
+                    if chosen_piece.is_valid_movement(self.board.get(), piece_cell, movement_cell[0], movement_cell[1]):
+                        success = self.move_piece(chosen_piece, piece_cell, movement_cell)
+                        if success:
+                            break
+
     def check_game_result(self):
-        self.board.check_game_result(self.is_white_turn)
-        for row in self.board.get():
-            for i in row:
-                print(i, end=' ')
-            print()
-        # if self.checkmate:
-        #     print('Checkmate')
-        #     self.reset()
-        # elif self.stalemate:
-        #     print('Stalemate')
-        #     self.reset()
+        is_checkmate, is_stalemate = self.board.check_game_result(self.is_white_turn)
+        if is_checkmate:
+            print('Checkmate')
+            self.reset()
+        elif is_stalemate:
+            print('Stalemate')
+            self.reset()

@@ -40,26 +40,26 @@ class Board:
                     board_row.extend([None] * int(item))
                 else:
                     x, y = self.cell_size * (j + offset) + self.start_x, self.cell_size * i
-                    board_row.append(PieceFactory.create(item, x, y, self.cell_size))
+                    board_row.append(PieceFactory.create(item, self.cell_size))
             board.append(board_row)
         return board
 
     def get(self):
         return self.__internal_board
 
-    def at(self, cell: tuple[int, int]) -> Piece:
+    def at(self, cell: 'tuple[int, int]') -> Piece:
         x, y = cell
         if self.is_inside(x, y):
             return self.__internal_board[y][x]
         return None
 
-    def set_piece_at(self, piece: Piece, cell: tuple[int, int]):
+    def set_piece_at(self, piece: Piece, cell: 'tuple[int, int]'):
         x, y = cell
         if self.is_inside(x, y):
             self.__internal_board[y][x] = piece
             piece.move(self.get_screen_position(cell))
 
-    def revert_eaten_piece(self, piece: Piece, cell : tuple[int, int]):
+    def revert_eaten_piece(self, piece: Piece, cell : 'tuple[int, int]'):
         if piece is None:
             return
 
@@ -78,40 +78,41 @@ class Board:
     def is_inside(self, x: int, y: int) -> bool:
         return is_inside_board(self.__internal_board, x, y)
 
-    def get_screen_position(self, cell: tuple[int, int]) -> tuple[int, int]:
+    def get_screen_position(self, cell: 'tuple[int, int]') -> 'tuple[int, int]':
         x, y = cell
         return self.cell_size * x + self.start_x, self.cell_size * y
 
-    def try_move_piece(self, piece: Piece, is_white_turn: bool, from_x: int, from_y: int, to_x: int, to_y: int):
-        eaten_piece = self.__move_piece(piece, from_x, from_y, to_x, to_y)
+    def try_move_piece(self, piece: Piece, is_white_turn: bool, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):        
+        eaten_piece = self.__move_piece(piece, from_pos, to_pos)
 
         self.is_checked = self.player_is_checked(is_white_turn)
         if self.is_checked:
-            return self.reject_move_piece(piece, eaten_piece, (from_x, from_y), (to_x, to_y))
+            return self.reject_move_piece(piece, eaten_piece, from_pos, to_pos)
         else:
-            return self.confirm_move_piece(eaten_piece)
+            return self.confirm_move_piece(piece, eaten_piece, to_pos)
 
-    def __move_piece(self, piece: Piece, from_x: int, from_y: int, to_x: int, to_y: int):
+    def __move_piece(self, piece: Piece, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):
+        from_x, from_y = from_pos
+        to_x, to_y = to_pos
+
         self.__internal_board[from_y][from_x] = None
         eaten_piece = self.__internal_board[to_y][to_x]
         self.__internal_board[to_y][to_x] = piece
-        self.set_piece_at(piece, (to_x, to_y))
+
         return eaten_piece
 
-    def reject_move_piece(self, piece: Piece, eaten_piece: Piece, from_cell: tuple[int, int], to_cell: tuple[int, int]):
-        if eaten_piece is not None:
-            self.__eaten_pieces.append(eaten_piece)
-
-        from_x, from_y = from_cell
-        to_x, to_y = to_cell
+    def reject_move_piece(self, piece: Piece, eaten_piece: Piece, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):
+        from_x, from_y = from_pos
+        to_x, to_y = to_pos
+        
         self.__internal_board[from_y][from_x] = piece
         self.__internal_board[to_y][to_x] = eaten_piece
-        piece.x, piece.y = self.get_screen_position(from_cell)
         return False
 
-    def confirm_move_piece(self, eaten_piece: Piece):
+    def confirm_move_piece(self, piece: Piece, eaten_piece: Piece, to_pos: 'tuple[int, int]'):
         if eaten_piece is not None:
             self.__eaten_pieces.append(eaten_piece)
+        self.set_piece_at(piece, to_pos)
         return True
 
     def player_is_checked(self, is_white: bool):
@@ -119,64 +120,56 @@ class Board:
         if king_cell is None:
             return False
 
-        for piece in self.get_pieces(not is_white):
-            cell = self.get_cell(piece.x, piece.y)
+        for piece, cell in self.get_pieces(not is_white):
             movements = piece.get_valid_movements(self.__internal_board, cell)
             movements = list(map(remove_code_modifiers, movements))
             if to_code(king_cell[0], king_cell[1]) in movements:
                 return True
         return False
 
-    def get_pieces(self, is_white: bool) -> list[Piece]:
+    def get_pieces(self, is_white: bool) -> 'list[tuple[Piece, tuple[int, int]]]':
         pieces = []
-        for row in self.__internal_board:
-            for piece in row:
+        for i, row in enumerate(self.__internal_board):
+            for j, piece in enumerate(row):
                 if piece is not None and piece.is_white == is_white:
-                    pieces.append(piece)
+                    pieces.append((piece, (j, i)))
         return pieces
 
-    def get_king_cell(self, board: list[list[Piece]], is_white: bool):
-        for row in board:
-            for piece in row:
-                if piece is not None and piece.is_white == is_white and is_king(piece):
-                    return self.get_cell(piece.x, piece.y)
+    def get_piece_cell(self, piece: Piece) -> 'tuple[int, int]':
+        if piece is None:
+            return None
+        
+        for i, row in enumerate(self.__internal_board):
+            for j, item in enumerate(row):
+                if item == piece:
+                    return (j, i)
         return None
 
-    def check_game_result(self, is_white_turn: bool):
+    def get_king_cell(self, board: 'list[list[Piece]]', is_white: bool):
+        for i, row in enumerate(board):
+            for j, piece in enumerate(row):
+                if piece is not None and piece.is_white == is_white and is_king(piece):
+                    return (j, i)
+        return None
+
+    def check_game_result(self, is_white_turn: bool) -> 'tuple[int, int]':
         valid_movements = 0
         is_checkmate = self.player_is_checked(is_white_turn)
-        
-        original_board = self.__internal_board
-        original_eaten_pieces = self.__eaten_pieces
-        self.__internal_board = original_board.copy()
-        self.__eaten_pieces = original_eaten_pieces
 
-        for piece in self.get_pieces(is_white_turn):
-            cell_x, cell_y = self.get_cell(piece.x, piece.y)
-            movements = piece.get_valid_movements(self.__internal_board, (cell_x, cell_y))
-
+        for piece, player_cell in self.get_pieces(is_white_turn):
+            movements = piece.get_valid_movements(self.get(), player_cell)
             for movement in movements:
-                (test_x, test_y), _, _ = from_code(movement)
-                possibly_eaten_piece = self.at((test_x, test_y))
-                eaten_piece = self.__move_piece(piece, cell_x, cell_y, test_x, test_y)
+                movement_cell, _, _ = from_code(movement)
+
+                eaten_piece = self.__move_piece(piece, player_cell, movement_cell)
                 is_checked = self.player_is_checked(is_white_turn)
-                self.reject_move_piece(piece, eaten_piece, (test_x, test_y), (cell_x, cell_y))
-                
+                self.reject_move_piece(piece, eaten_piece, player_cell, movement_cell)
+
                 is_checkmate = is_checkmate and is_checked
                 valid_movements += int(not is_checked)
-                # if not is_checked:
-                #     is_checkmate = False
-                #     valid_movements += 1
-                    # self.try_move_piece(piece, is_white_turn, test_x, test_y, cell_x, cell_y)
-                    # self.revert_eaten_piece(possibly_eaten_piece, (test_x, test_y))
-            
-            self.set_piece_at(piece, (cell_x, cell_y))
 
-        self.stalemate = valid_movements == 0
-        self.checkmate = is_checkmate
-
-        self.__internal_board = original_board
-        self.__eaten_pieces = original_eaten_pieces
+        is_stalemate = valid_movements == 0
+        return (is_checkmate, is_stalemate)
 
     def draw(self, screen: pygame.Surface, clicked_piece: Piece):
         self.draw_board(screen)
@@ -199,19 +192,22 @@ class Board:
     def draw_pieces(self, screen: pygame.Surface, clicked_piece: Piece):
         self.draw_piece_valid_movements(screen, clicked_piece)
 
-        for row in self.__internal_board:
-            for piece in row:
+        for i, row in enumerate(self.__internal_board):
+            for j, piece in enumerate(row):
                 if piece is not None:
-                    piece.draw(screen)
+                    piece.draw(screen, self.get_screen_position((j, i)))
 
     def draw_piece_valid_movements(self, screen: pygame.Surface, clicked_piece: Piece):
         if clicked_piece is None:
             return
 
-        cell = self.get_cell(clicked_piece.x, clicked_piece.y)
+        cell = self.get_piece_cell(clicked_piece)
+        if cell is None:
+            return
+
         movements = clicked_piece.get_valid_movements(self.__internal_board, cell)
         for movement in movements:
-            (movement_cell_x, movement_cell_y), will_eat, will_check = from_code(movement)
+            (movement_cell_x, movement_cell_y), will_eat, _ = from_code(movement)
             
             if (movement_cell_x + movement_cell_y) % 2 == 0: color = self.highlighted_white_color
             else: color = self.highlighted_black_color
@@ -244,22 +240,18 @@ class Board:
     def draw_eaten_pieces(self, screen: pygame.Surface):
         width, height = screen.get_width(), screen.get_height()
 
-        white_x, white_y = 0, 0
-        black_x, black_y = width - self.cell_size, height - self.cell_size
+        white_x, white_y = 0, -self.cell_size
+        black_x, black_y = width - self.cell_size, height
         for piece in self.__eaten_pieces:
             if piece.is_white:
-                piece.x = white_x
-                piece.y = white_y
                 white_y += self.cell_size
                 if white_y + self.cell_size > height:
                     white_y = 0
                     white_x += self.cell_size
-                piece.draw(screen)
+                piece.draw(screen, (white_x, white_y))
             else:
-                piece.x = black_x
-                piece.y = black_y
                 black_y -= self.cell_size
                 if black_y < 0:
                     black_y = height - self.cell_size
                     black_x -= self.cell_size
-                piece.draw(screen)
+                piece.draw(screen, (black_x, black_y))
