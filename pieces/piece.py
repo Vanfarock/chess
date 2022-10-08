@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import pygame
 
 from pieces.piece_code import PieceCode
-from util.utils import remove_code_modifiers, to_code
+from util.utils import from_code, remove_code_modifiers, to_code
 
 class Piece(pygame.sprite.Sprite, ABC):
     def __init__(self, cell_size: int, is_white: bool):
@@ -38,6 +38,14 @@ class Piece(pygame.sprite.Sprite, ABC):
         movements = self.get_valid_movements(board, cell)
         movements_without_modifiers = map(remove_code_modifiers, movements)
         return to_code(new_cell_x, new_cell_y) in movements_without_modifiers
+
+    def get_movement(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]', clicked_cell: 'tuple[int, int]'):
+        movements = self.get_valid_movements(board, cell)
+        for movement in movements:
+            code_without_modifier = remove_code_modifiers(movement)
+            if code_without_modifier == to_code(clicked_cell[0], clicked_cell[1]):
+                return movement
+        return None
 
     def move(self, new_pos: 'tuple[int, int]'):
         self.x = new_pos[0]

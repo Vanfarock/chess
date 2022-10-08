@@ -4,7 +4,7 @@ from pieces.piece import Piece
 from util.colors import Colors
 import random as rd
 
-from util.utils import from_code
+from util.utils import from_code, is_king
 
 MAX_FPS = 60
 
@@ -80,12 +80,48 @@ class Game:
             self.clicked_piece = None
 
     def move_piece(self, piece: Piece, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):
+        movement = piece.get_movement(self.board.get(), from_pos, to_pos)
         success = self.board.try_move_piece(piece, self.is_white_turn, from_pos, to_pos)
         if success:
+            self.check_special_movements(piece, movement)
+
             piece.moved()
             self.is_white_turn = not self.is_white_turn
             self.check_game_result()
         return success
+
+    def check_special_movements(self, piece: Piece, movement: str):
+        if is_king(piece):
+            cell, _,  will_castle = from_code(movement)
+            if will_castle:
+                self.castle(cell)
+
+    def castle(self, cell: 'tuple[int, int]'):
+        x, y = cell
+        if x > 4:
+            rookie_pos = (7, y)
+            rookie = self.board.at(rookie_pos)
+            if self.is_white_turn:
+                self.move_piece(rookie, rookie_pos, (x - 1, y))
+            else:
+                self.move_piece(rookie, rookie_pos, (x - 2, y))
+        else:
+            rookie_pos = (0, y)
+            rookie = self.board.at(rookie_pos)
+            if self.is_white_turn:
+                self.move_piece(rookie, rookie_pos, (x + 1, y))
+            else:
+                self.move_piece(rookie, rookie_pos, (x + 2, y))
+        self.clicked_piece = None
+
+    def check_game_result(self):
+        is_checkmate, is_stalemate = self.board.check_game_result(self.is_white_turn)
+        if is_checkmate:
+            print('Checkmate')
+            self.reset()
+        elif is_stalemate:
+            print('Stalemate')
+            self.reset()
 
     def draw(self):
         self.board.draw(self.screen, self.clicked_piece)
@@ -104,12 +140,3 @@ class Game:
                         success = self.move_piece(chosen_piece, piece_cell, movement_cell)
                         if success:
                             break
-
-    def check_game_result(self):
-        is_checkmate, is_stalemate = self.board.check_game_result(self.is_white_turn)
-        if is_checkmate:
-            print('Checkmate')
-            self.reset()
-        elif is_stalemate:
-            print('Stalemate')
-            self.reset()
