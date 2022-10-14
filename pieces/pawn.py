@@ -20,7 +20,7 @@ class Pawn(Piece):
 
         x, y = cell
         if is_inside_board(board, x, y + delta) and board[y + delta][x] is None:
-            movements.append(to_code(x, y + delta))
+            movements.append(to_code(x, y + delta, will_promote=self.will_promote(board, y + delta)))
             if not self._was_moved:
                 if is_inside_board(board, x, y + delta*2) and board[y + delta*2][x] is None:
                     movements.append(to_code(x, y + delta*2))
@@ -28,12 +28,15 @@ class Pawn(Piece):
         if is_inside_board(board, x + 1, y + delta):
             right_diagonal = board[y + delta][x + 1]
             if right_diagonal is not None and right_diagonal.is_white != self.is_white:
-                movements.append(to_code(x + 1, y + delta, will_eat=True))
+                movements.append(to_code(x + 1, y + delta, will_eat=True, will_promote=self.will_promote(board, y + delta)))
 
         if is_inside_board(board, x - 1, y + delta):
             left_diagonal = board[y + delta][x - 1]
             if left_diagonal is not None and left_diagonal.is_white != self.is_white:
-                movements.append(to_code(x - 1, y + delta, will_eat=True))
+                movements.append(to_code(x - 1, y + delta, will_eat=True, will_promote=self.will_promote(board, y + delta)))
 
 
         return movements
+
+    def will_promote(self, board: 'list[list[Piece]]', y: int) -> bool:
+        return y == 0 or y == len(board) - 1

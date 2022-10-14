@@ -159,7 +159,7 @@ class Board:
         for piece, player_cell in self.get_pieces(is_white_turn):
             movements = piece.get_valid_movements(self.get(), player_cell)
             for movement in movements:
-                movement_cell, _, _ = from_code(movement)
+                movement_cell, _, _, _ = from_code(movement)
 
                 eaten_piece = self.__move_piece(piece, player_cell, movement_cell)
                 is_checked = self.player_is_checked(is_white_turn)
@@ -207,7 +207,7 @@ class Board:
 
         movements = clicked_piece.get_valid_movements(self.__internal_board, cell)
         for movement in movements:
-            (movement_cell_x, movement_cell_y), will_eat, _ = from_code(movement)
+            (movement_cell_x, movement_cell_y), will_eat, _, _ = from_code(movement)
             
             if (movement_cell_x + movement_cell_y) % 2 == 0: color = self.highlighted_white_color
             else: color = self.highlighted_black_color
