@@ -2,12 +2,13 @@ from pieces.bishop import Bishop
 from pieces.king import King
 from pieces.knight import Knight
 from pieces.pawn import Pawn
+from pieces.piece import Piece
 from pieces.piece_code import PieceCode
 from pieces.queen import Queen
 from pieces.rookie import Rookie
 
 class PieceFactory:
-    def create(fen_code: str, cell_size: int):
+    def create(fen_code: str, cell_size: int) -> Piece:
         return {
             PieceCode.PAWN: Pawn(cell_size, True),
             PieceCode.ROOKIE: Rookie(cell_size, True),

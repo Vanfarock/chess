@@ -7,12 +7,12 @@ class Rookie(Piece):
     def __init__(self, cell_size: int, is_white: bool):
         super().__init__(cell_size, is_white)
 
-    def get_fen_code(self):
+    def get_fen_code(self) -> str:
         if self.is_white:
             return PieceCode.ROOKIE
         return f'{PieceCode.ROOKIE.lower()}'
 
-    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]'):
+    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]') -> 'list[str]':
         movements = []
         
         directions = [
@@ -38,3 +38,20 @@ class Rookie(Piece):
                 y += direction[1]
 
         return movements
+
+    def score(self, cell: 'tuple[int, int]') -> float:
+        position_table = [
+            [ 0  , 0, 0, 0  , 0  , 0, 0,  0  ],
+            [ 0.5, 1, 1, 1  , 1  , 1, 1,  0.5],
+            [-0.5, 0, 0, 0  , 0  , 0, 0, -0.5],
+            [-0.5, 0, 0, 0  , 0  , 0, 0, -0.5],
+            [-0.5, 0, 0, 0  , 0  , 0, 0, -0.5],
+            [-0.5, 0, 0, 0  , 0  , 0, 0, -0.5],
+            [-0.5, 0, 0, 0  , 0  , 0, 0, -0.5],
+            [ 0  , 0, 0, 0.5, 0.5, 0, 0,  0  ],
+        ]
+        if not self.is_white:
+            position_table = list(reversed(position_table))
+
+        x, y = cell
+        return 50 + position_table[y][x]

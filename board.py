@@ -17,29 +17,22 @@ class Board:
         self.__internal_board: list[list[Piece]] = self.setup_board('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
         # Stalemate test
         # self.__internal_board: list[list[Piece]] = self.setup_board('2Q2bnr/4p1pq/5pkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR')
+
+        # Minimax test
+        # self.__internal_board: list[list[Piece]] = self.setup_board('8/8/8/8/8/1R6/N1B5/1b6')
         
-        self.hanging_piece: Piece = None
-        self.hanging_piece_pos: tuple[int, int] = None
-
-        self.clicked_piece: Piece = None
-
-        self.is_white_turn: bool = True
-        self.is_checked: bool = False
         self.__eaten_pieces: list[Piece] = []
-        self.checkmate: bool = False
-        self.stalemate: bool = False
 
     def setup_board(self, fen_code: str):
         board = []
-        for i, row in enumerate(fen_code.split('/')):
+        for row in fen_code.split('/'):
             board_row = []
             offset = 0
-            for j, item in enumerate(row):
+            for item in row:
                 if item.isdigit():
                     offset += int(item) - 1
                     board_row.extend([None] * int(item))
                 else:
-                    x, y = self.cell_size * (j + offset) + self.start_x, self.cell_size * i
                     board_row.append(PieceFactory.create(item, self.cell_size))
             board.append(board_row)
         return board
@@ -83,15 +76,15 @@ class Board:
         return self.cell_size * x + self.start_x, self.cell_size * y
 
     def try_move_piece(self, piece: Piece, is_white_turn: bool, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):        
-        eaten_piece = self.__move_piece(piece, from_pos, to_pos)
+        eaten_piece = self.move_piece(piece, from_pos, to_pos)
 
-        self.is_checked = self.player_is_checked(is_white_turn)
-        if self.is_checked:
+        is_checked = self.player_is_checked(is_white_turn)
+        if is_checked:
             return self.reject_move_piece(piece, eaten_piece, from_pos, to_pos)
         else:
             return self.confirm_move_piece(piece, eaten_piece, to_pos)
 
-    def __move_piece(self, piece: Piece, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):
+    def move_piece(self, piece: Piece, from_pos: 'tuple[int, int]', to_pos: 'tuple[int, int]'):
         from_x, from_y = from_pos
         to_x, to_y = to_pos
 
@@ -161,7 +154,7 @@ class Board:
             for movement in movements:
                 movement_cell, _, _, _ = from_code(movement)
 
-                eaten_piece = self.__move_piece(piece, player_cell, movement_cell)
+                eaten_piece = self.move_piece(piece, player_cell, movement_cell)
                 is_checked = self.player_is_checked(is_white_turn)
                 self.reject_move_piece(piece, eaten_piece, player_cell, movement_cell)
 
@@ -170,6 +163,20 @@ class Board:
 
         is_stalemate = valid_movements == 0
         return (is_checkmate, is_stalemate)
+
+    def evaluate(self) -> float:
+        score = 0
+
+        for i, row in enumerate(self.get()):
+            for j, piece in enumerate(row):
+                if piece is None:
+                    continue
+
+                if piece.is_white:
+                    score -= piece.score((j, i))
+                else:
+                    score += piece.score((j, i))
+        return score
 
     def draw(self, screen: pygame.Surface, clicked_piece: Piece):
         self.draw_board(screen)

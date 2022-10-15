@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import pygame
 
 from pieces.piece_code import PieceCode
-from util.utils import from_code, remove_code_modifiers, to_code
+from util.utils import remove_code_modifiers, to_code
 
 class Piece(pygame.sprite.Sprite, ABC):
     def __init__(self, cell_size: int, is_white: bool):
@@ -12,8 +12,8 @@ class Piece(pygame.sprite.Sprite, ABC):
         
         image_path = self.get_source_images()[self.get_fen_code()]
         image = pygame.image.load(image_path).convert_alpha()
-        self.image = pygame.transform.scale(image, (cell_size, cell_size))
-        self._was_moved = False
+        self.image: pygame.surface.Surface = pygame.transform.scale(image, (cell_size, cell_size))
+        self.was_moved = False
 
     def get_source_images(self):
         return {
@@ -52,12 +52,16 @@ class Piece(pygame.sprite.Sprite, ABC):
         self.y = new_pos[1]
 
     def moved(self):
-        self._was_moved = True
+        self.was_moved = True
 
     @abstractmethod
-    def get_fen_code(self):
+    def get_fen_code(self) -> str:
         pass
 
     @abstractmethod
-    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]'):
+    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]') -> 'list[str]':
+        pass
+
+    @abstractmethod
+    def score(self, cell: 'tuple[int, int]') -> float:
         pass

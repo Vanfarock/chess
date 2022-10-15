@@ -7,12 +7,12 @@ class Bishop(Piece):
     def __init__(self, cell_size: int, is_white: bool):
         super().__init__(cell_size, is_white)
 
-    def get_fen_code(self):
+    def get_fen_code(self) -> str:
         if self.is_white:
             return PieceCode.BISHOP
         return f'{PieceCode.BISHOP.lower()}'
 
-    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]'):
+    def get_valid_movements(self, board: 'list[list[Piece]]', cell: 'tuple[int, int]') -> 'list[str]':
         movements = []
         
         directions = [
@@ -38,3 +38,20 @@ class Bishop(Piece):
                 y += direction[1]
 
         return movements
+
+    def score(self, cell: 'tuple[int, int]') -> float:
+        position_table = [
+            [-2, -1  , -1  , -1, -1, -1  , -1  , -2],
+            [-1,  0  ,  0  ,  0,  0,  0  ,  0  , -1],
+            [-1,  0  ,  0.5,  1,  1,  0.5,  0  , -1],
+            [-1,  0.5,  0.5,  1,  1,  0.5,  0.5, -1],
+            [-1,  0  ,  1  ,  1,  1,  1  ,  0  , -1],
+            [-1,  1  ,  1  ,  1,  1,  1  ,  1  , -1],
+            [-1,  0.5,  0  ,  0,  0,  0  ,  0.5, -1],
+            [-2, -1  , -1  , -1, -1, -1  , -1  , -2],
+        ]
+        if not self.is_white:
+            position_table = list(reversed(position_table))
+
+        x, y = cell
+        return 30 + position_table[y][x]
