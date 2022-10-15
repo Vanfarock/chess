@@ -6,9 +6,6 @@ class King(Piece):
     def __init__(self, cell_size: int, is_white: bool):
         super().__init__(cell_size, is_white)
 
-        self.ready_to_rock_left = False # Rock is much cooler than castle
-        self.ready_to_rock_right = False # Rock is much cooler than castle
-
     def get_fen_code(self):
         if self.is_white:
             return PieceCode.KING
@@ -46,12 +43,10 @@ class King(Piece):
                 if not is_inside_board(board, x, y):
                     break
                 piece = board[y][x]
-                if piece is None:
+                if piece is not None:
+                    if is_rookie(piece) and not piece._was_moved:
+                        movements.append(to_code(cell[0] + 2, y, will_castle=True))
                     break
-
-                if is_rookie(piece) and not piece._was_moved:
-                    self.ready_to_rock_right = True
-                    movements.append(to_code(cell[0] - 2, y, will_castle=True))
                 x += 1
 
             x = cell[0] - 1
@@ -60,12 +55,10 @@ class King(Piece):
                 if not is_inside_board(board, x, y):
                     break
                 piece = board[y][x]
-                if piece is None:
+                if piece is not None:
+                    if is_rookie(piece) and not piece._was_moved:
+                        movements.append(to_code(cell[0] - 2, y, will_castle=True))
                     break
-
-                if is_rookie(piece) and not piece._was_moved:
-                    self.ready_to_rock_left = True
-                    movements.append(to_code(cell[0] + 2, y, will_castle=True))
                 x -= 1
 
         return movements

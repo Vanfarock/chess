@@ -96,7 +96,6 @@ class Game:
     def check_special_movements(self, piece: Piece, movement: str):
         if is_king(piece) or is_pawn(piece):
             cell, _,  will_castle, will_promote = from_code(movement)
-            print(will_promote)
             if will_castle:
                 self.castle(cell)
             elif will_promote:
@@ -120,7 +119,6 @@ class Game:
                 self.move_piece(rookie, rookie_pos, (x + 2, y))
 
     def promote(self, cell: 'tuple[int, int]'):
-        print('Hello')
         fen_code = PieceCode.QUEEN
         if not self.is_white_turn:
             fen_code = fen_code.lower()
@@ -141,8 +139,8 @@ class Game:
 
     def play_ai(self):
         if not self.is_white_turn:
+            pieces = self.board.get_pieces(self.is_white_turn)
             while True:
-                pieces = self.board.get_pieces(self.is_white_turn)
                 chosen_piece, piece_cell = rd.choice(pieces)
 
                 movements = chosen_piece.get_valid_movements(self.board.get(), piece_cell)
